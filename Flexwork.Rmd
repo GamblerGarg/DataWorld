@@ -1,0 +1,118 @@
+---
+title: "SARAL"
+output: 
+  flexdashboard::flex_dashboard:
+    #orientation: rows
+    vertical_layout: scroll
+    theme: united #cerulean
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(DT)
+startData <- read.csv("murders.csv")
+GBChoices <- as.list(names(startData))
+names(GBChoices) <- paste(names(startData),map(startData,~length(unique(.x))))
+
+updateData <- reactive(
+  startData %>% group_by(!!! rlang::syms(input$GB)) %>% summarise_if(is.numeric,sum,na.rm=T))
+
+```
+
+Sidebar {.sidebar}
+=====================================
+
+```{r}
+selectInput(inputId = "GB",label = "Group By",choices = GBChoices)
+selectInput(inputId = "Metric",label = "Metric",choices = names(select_if(startData,is.numeric)))
+```
+
+
+
+Bar Graph
+===================================== 
+
+Column
+-------------------------------------
+### Bar Graph
+```{r}
+renderPlot({
+ updateData() %>% 
+  ggplot(aes(x=!! rlang::sym(input$GB),y=!! rlang::sym(input$Metric),fill=!! rlang::sym(input$GB))) +
+  geom_col()
+})
+```
+
+
+### Table 
+```{r}
+renderDT(
+  updateData(), rownames = F, extensions = 'Buttons', filter="top", editable=T,
+  options = list(
+    dom = 'Blfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+    lengthMenu = list(c(10,50,100,-1),c(10,50,100,"All"))
+  )
+)
+```
+
+
+Line Graph
+=====================================
+
+
+Column
+-------------------------------------
+### Line Graph
+```{r}
+renderPlot({
+ updateData() %>% 
+  ggplot(aes(x=!! rlang::sym(input$GB),y=!! rlang::sym(input$Metric),fill=!! rlang::sym(input$GB))) +
+  geom_line()
+})
+```
+
+Heat Map
+=====================================
+
+Column
+-------------------------------------
+### bin2d Graph
+```{r}
+renderPlot({
+ updateData() %>% 
+  ggplot(aes(x=!! rlang::sym(input$GB),y=!! rlang::sym(input$Metric),fill=!! rlang::sym(input$GB))) +
+  geom_bin2d()
+})
+```
+
+Point graph
+=====================================
+
+Column
+-------------------------------------
+### Point Graph
+```{r}
+renderPlot({
+ updateData() %>% 
+  ggplot(aes(x=!! rlang::sym(input$GB),y=!! rlang::sym(input$Metric),fill=!! rlang::sym(input$GB))) +
+   geom_point()
+})
+```
+
+Smooth graph
+=====================================
+
+Column
+-------------------------------------
+### Smooth Graph
+```{r}
+renderPlot({
+ updateData() %>% 
+  ggplot(aes(x=!! rlang::sym(input$GB),y=!! rlang::sym(input$Metric),fill=!! rlang::sym(input$GB))) +
+   geom_smooth()
+})
+```
+
+
