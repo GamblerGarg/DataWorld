@@ -1,17 +1,21 @@
 ---
+#author: "Yatharth Garg"
 title: "SARAL"
 output: 
   flexdashboard::flex_dashboard:
+    social: menu
+    source_code: embed
     #orientation: rows
     vertical_layout: scroll
     theme: united #cerulean
+    logo: favicon-32x32.png
 runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(DT)
-startData <- read.csv("murders.csv")
+startData <- read.csv("pollutant_csv.csv")
 GBChoices <- as.list(names(startData))
 names(GBChoices) <- paste(names(startData),map(startData,~length(unique(.x))))
 
@@ -109,10 +113,10 @@ Column
 ### Smooth Graph
 ```{r}
 renderPlot({
- updateData() %>% 
-  ggplot(aes(x=!! rlang::sym(input$GB),y=!! rlang::sym(input$Metric),fill=!! rlang::sym(input$GB))) +
+ updateData() %>% ggplot(aes(x=!! rlang::sym(input$GB),y=!! rlang::sym(input$Metric),fill=!! rlang::sym(input$GB))) +geom_point(shape=1) +
    geom_smooth()
 })
 ```
+
 
 
